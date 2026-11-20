@@ -46,6 +46,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,11 +69,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-// Niveles de prioridad disponibles para cada actividad
+// Niveles de prioridad disponibles para cada actividad (colores optimizados para fondo negro)
 enum class Prioridad(val etiqueta: String, val color: Color) {
-    BAJA("Baja", Color(0xFF15803D)),   // Verde legible
-    MEDIA("Media", Color(0xFFB45309)), // Ámbar legible
-    ALTA("Alta", Color(0xFFB91C1C))    // Rojo legible
+    BAJA("Baja", Color(0xFF4ADE80)),   // Verde claro legible sobre negro
+    MEDIA("Media", Color(0xFFFBBF24)), // Ámbar claro legible sobre negro
+    ALTA("Alta", Color(0xFFF87171))    // Rojo claro legible sobre negro
 }
 
 // Modelo de actividad en memoria
@@ -84,11 +85,23 @@ data class Actividad(
     val completada: Boolean = false
 )
 
+private val EsquemaColorNegro = darkColorScheme(
+    primary = Color(0xFF3B82F6),
+    onPrimary = Color.White,
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color(0xFF0A0A0C),
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF18181B),
+    onSurfaceVariant = Color(0xFFA1A1AA),
+    outline = Color(0xFF3F3F46)
+)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            MaterialTheme(colorScheme = EsquemaColorNegro) {
                 MiAgendaPantalla()
             }
         }
@@ -118,12 +131,15 @@ fun MiAgendaPantalla() {
     var siguienteId by remember { mutableIntStateOf(1) }
     val actividades = remember { mutableStateListOf<Actividad>() }
     var textoBusqueda by remember { mutableStateOf("") }
+    // null representa "Todas" las prioridades
+    var filtroPrioridad by remember { mutableStateOf<Prioridad?>(null) }
 
     val consultaLimpia = textoBusqueda.trim()
-    val actividadesFiltradas = if (consultaLimpia.isEmpty()) {
-        actividades
-    } else {
-        actividades.filter { it.nombre.contains(consultaLimpia, ignoreCase = true) }
+    val actividadesFiltradas = actividades.filter { actividad ->
+        val coincideTexto = consultaLimpia.isEmpty() ||
+            actividad.nombre.contains(consultaLimpia, ignoreCase = true)
+        val coincidePrioridad = filtroPrioridad == null || actividad.prioridad == filtroPrioridad
+        coincideTexto && coincidePrioridad
     }
 
     // Estado para editar una actividad existente
@@ -137,7 +153,8 @@ fun MiAgendaPantalla() {
     val editDatePickerState = rememberDatePickerState()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Black
     ) { paddingInterno ->
         Column(
             modifier = Modifier
@@ -299,9 +316,53 @@ fun MiAgendaPantalla() {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 8. Selector de filtros por prioridad (Todas, Alta, Media, Baja)
+            val opcionesFiltro: List<Pair<String, Prioridad?>> = listOf(
+                "Todas" to null,
+                "Alta" to Prioridad.ALTA,
+                "Media" to Prioridad.MEDIA,
+                "Baja" to Prioridad.BAJA
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                opcionesFiltro.forEach { (etiqueta, prioridadObjetivo) ->
+                    val activo = filtroPrioridad == prioridadObjetivo
+                    val colorActivo = prioridadObjetivo?.color ?: MaterialTheme.colorScheme.primary
+                    OutlinedButton(
+                        onClick = { filtroPrioridad = prioridadObjetivo },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(42.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (activo) {
+                                colorActivo.copy(alpha = 0.14f)
+                            } else {
+                                Color.Transparent
+                            },
+                            contentColor = if (activo) {
+                                colorActivo
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
+                    ) {
+                        Text(
+                            text = etiqueta,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (activo) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 7. Lista de actividades agregadas (filtradas en tiempo real)
+            // 9. Lista de actividades agregadas (filtradas por búsqueda y prioridad)
             if (actividades.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -323,7 +384,7 @@ fun MiAgendaPantalla() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No se encontraron actividades con \\"\$consultaLimpia\\".",
+                        text = "No hay actividades que coincidan con los filtros actuales.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -691,7 +752,7 @@ fun TarjetaResumenProgreso(
 @Preview(showBackground = true)
 @Composable
 fun MiAgendaPreview() {
-    MaterialTheme {
+    MaterialTheme(colorScheme = EsquemaColorNegro) {
         MiAgendaPantalla()
     }
 }`;
@@ -723,8 +784,8 @@ export const SCREEN_STRUCTURE_STEPS = [
       'Tarjeta compacta encima de la lista con círculo de porcentaje y barra lineal animada de tareas completadas.',
   },
   {
-    component: 'Barra de búsqueda + LazyColumn',
+    component: 'Búsqueda + Filtro de prioridad + LazyColumn',
     purpose:
-      'Filtra la lista por nombre en tiempo real mientras se escribe, con botón rápido para limpiar la búsqueda.',
+      'Combina el filtro por nombre en tiempo real con el selector de prioridad (Todas, Alta, Media, Baja).',
   },
 ];

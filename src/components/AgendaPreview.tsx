@@ -22,20 +22,20 @@ const PRIORITY_OPTIONS: {
   {
     id: 'baja',
     label: 'Baja',
-    activeClass: 'bg-emerald-50 border-emerald-600 text-emerald-800',
-    textClass: 'text-emerald-700',
+    activeClass: 'bg-emerald-950/80 border-emerald-500 text-emerald-300',
+    textClass: 'text-emerald-400',
   },
   {
     id: 'media',
     label: 'Media',
-    activeClass: 'bg-amber-50 border-amber-600 text-amber-800',
-    textClass: 'text-amber-700',
+    activeClass: 'bg-amber-950/80 border-amber-500 text-amber-300',
+    textClass: 'text-amber-400',
   },
   {
     id: 'alta',
     label: 'Alta',
-    activeClass: 'bg-red-50 border-red-600 text-red-800',
-    textClass: 'text-red-700',
+    activeClass: 'bg-red-950/80 border-red-500 text-red-300',
+    textClass: 'text-red-400',
   },
 ];
 
@@ -175,15 +175,21 @@ export function AgendaPreview() {
   const progressPercent = Math.round(progressRatio * 100);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState<'todas' | PriorityLevel>('todas');
   const trimmedQuery = searchQuery.trim().toLowerCase();
-  const filteredActivities = trimmedQuery
-    ? activities.filter((item) => item.name.toLowerCase().includes(trimmedQuery))
-    : activities;
+
+  const filteredActivities = activities.filter((item) => {
+    const matchesSearch = !trimmedQuery || item.name.toLowerCase().includes(trimmedQuery);
+    const matchesPriority = priorityFilter === 'todas' || item.priority === priorityFilter;
+    return matchesSearch && matchesPriority;
+  });
+
+  const hasActiveFilters = Boolean(trimmedQuery) || priorityFilter !== 'todas';
 
   return (
     <div className="px-4 pt-4 pb-6 space-y-4">
       {/* Encabezado principal */}
-      <header className="rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 shadow-md shadow-blue-600/15">
+      <header className="rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 border border-blue-500/30">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-blue-100 capitalize">
@@ -206,13 +212,13 @@ export function AgendaPreview() {
       {/* Tarjeta de formulario para agregar actividad */}
       <section
         aria-label="Agregar nueva actividad"
-        className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-5"
+        className="bg-neutral-950 rounded-3xl border border-neutral-800 p-4 sm:p-5"
       >
         <form onSubmit={handleAddActivity} noValidate className="space-y-3.5">
           <div>
             <label
               htmlFor="campo-actividad"
-              className="block text-sm font-semibold text-slate-800 mb-1.5"
+              className="block text-sm font-semibold text-neutral-200 mb-1.5"
             >
               Nueva actividad
             </label>
@@ -229,10 +235,10 @@ export function AgendaPreview() {
               }}
               aria-invalid={Boolean(validationError)}
               placeholder="Escribe una actividad"
-              className={`w-full min-h-[48px] px-4 py-3 rounded-xl border bg-slate-50/70 text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 transition-colors ${
+              className={`w-full min-h-[48px] px-4 py-3 rounded-xl border bg-neutral-900 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 transition-colors ${
                 validationError
-                  ? 'border-red-600 focus:ring-red-600 focus:border-red-600'
-                  : 'border-slate-300 focus:ring-blue-600 focus:border-blue-600'
+                  ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                  : 'border-neutral-700 focus:ring-blue-500 focus:border-blue-500'
               }`}
             />
             <AnimatePresence>
@@ -242,7 +248,7 @@ export function AgendaPreview() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="mt-1.5 text-sm font-medium text-red-700"
+                  className="mt-1.5 text-sm font-medium text-red-400"
                   role="alert"
                 >
                   {validationError}
@@ -254,24 +260,24 @@ export function AgendaPreview() {
           <div>
             <label
               htmlFor="campo-fecha"
-              className="block text-sm font-semibold text-slate-800 mb-1.5"
+              className="block text-sm font-semibold text-neutral-200 mb-1.5"
             >
               Fecha
             </label>
             <div className="relative flex items-center">
-              <Calendar className="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none" />
+              <Calendar className="w-5 h-5 text-neutral-400 absolute left-3.5 pointer-events-none" />
               <input
                 id="campo-fecha"
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value || getTodayISO())}
-                className="w-full min-h-[48px] pl-11 pr-4 py-3 rounded-xl border border-slate-300 bg-slate-50/70 text-base text-slate-900 tabular-nums focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors"
+                className="w-full min-h-[48px] pl-11 pr-4 py-3 rounded-xl border border-neutral-700 bg-neutral-900 text-base text-white tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <span className="block text-sm font-semibold text-slate-800 mb-1.5">
+            <span className="block text-sm font-semibold text-neutral-200 mb-1.5">
               Prioridad
             </span>
             <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Nivel de prioridad">
@@ -287,7 +293,7 @@ export function AgendaPreview() {
                     className={`min-h-[46px] px-3 py-2 rounded-xl border text-sm font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 whitespace-nowrap ${
                       isSelected
                         ? option.activeClass
-                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                        : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:bg-neutral-800'
                     }`}
                   >
                     <Flag className="w-4 h-4 shrink-0" />
@@ -300,7 +306,7 @@ export function AgendaPreview() {
 
           <button
             type="submit"
-            className="w-full min-h-[50px] px-5 py-3 rounded-xl bg-blue-600 text-white text-base font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20"
+            className="w-full min-h-[50px] px-5 py-3 rounded-xl bg-blue-600 text-white text-base font-semibold hover:bg-blue-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <Plus className="w-5 h-5 shrink-0" />
             <span>Agregar actividad</span>
@@ -311,7 +317,7 @@ export function AgendaPreview() {
       {/* Tarjeta pequeña de resumen encima de la lista de tareas */}
       <section
         aria-label="Resumen de progreso"
-        className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 flex items-center gap-4"
+        className="bg-neutral-950 rounded-2xl border border-neutral-800 p-4 flex items-center gap-4"
       >
         {/* Círculo de porcentaje */}
         <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
@@ -321,7 +327,7 @@ export function AgendaPreview() {
               cy="28"
               r="22"
               fill="none"
-              stroke="#e2e8f0"
+              stroke="#262626"
               strokeWidth="5"
             />
             <motion.circle
@@ -329,7 +335,7 @@ export function AgendaPreview() {
               cy="28"
               r="22"
               fill="none"
-              stroke="#2563eb"
+              stroke="#3b82f6"
               strokeWidth="5"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 22}
@@ -340,7 +346,7 @@ export function AgendaPreview() {
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             />
           </svg>
-          <span className="absolute text-xs font-bold text-slate-900 tabular-nums">
+          <span className="absolute text-xs font-bold text-white tabular-nums">
             {progressPercent}%
           </span>
         </div>
@@ -348,16 +354,16 @@ export function AgendaPreview() {
         {/* Texto y barra horizontal simple */}
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-sm font-bold text-slate-900 truncate">
+            <h2 className="text-sm font-bold text-white truncate">
               Progreso de tareas
             </h2>
-            <span className="text-xs font-semibold text-blue-700 tabular-nums shrink-0">
+            <span className="text-xs font-semibold text-blue-400 tabular-nums shrink-0">
               {completedCount}/{totalCount}
             </span>
           </div>
 
           <div
-            className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden"
+            className="h-2.5 w-full rounded-full bg-neutral-800 overflow-hidden"
             role="progressbar"
             aria-valuenow={progressPercent}
             aria-valuemin={0}
@@ -365,14 +371,14 @@ export function AgendaPreview() {
             aria-label="Porcentaje de tareas completadas"
           >
             <motion.div
-              className="h-full w-full bg-blue-600 rounded-full origin-left"
+              className="h-full w-full bg-blue-500 rounded-full origin-left"
               initial={false}
               animate={{ scaleX: progressRatio }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
 
-          <p className="text-xs text-slate-500 tabular-nums">
+          <p className="text-xs text-neutral-400 tabular-nums">
             {totalCount === 0
               ? 'Agrega una tarea para comenzar a medir tu avance'
               : `${completedCount} de ${totalCount} ${
@@ -385,11 +391,11 @@ export function AgendaPreview() {
       {/* Lista dinámica de actividades */}
       <section aria-label="Lista de actividades" className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-bold text-slate-700">
+          <h2 className="text-sm font-bold text-neutral-200">
             Mis actividades
           </h2>
-          <span className="text-xs font-medium text-slate-500 tabular-nums">
-            {trimmedQuery
+          <span className="text-xs font-medium text-neutral-400 tabular-nums">
+            {hasActiveFilters
               ? `${filteredActivities.length} de ${totalCount} ${
                   totalCount === 1 ? 'actividad' : 'actividades'
                 }`
@@ -399,37 +405,70 @@ export function AgendaPreview() {
 
         {/* Barra de búsqueda en tiempo real */}
         <div className="relative flex items-center">
-          <Search className="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none" />
+          <Search className="w-5 h-5 text-neutral-500 absolute left-3.5 pointer-events-none" />
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar actividad por nombre..."
             aria-label="Buscar actividad por nombre"
-            className="w-full min-h-[48px] pl-11 pr-11 py-2.5 rounded-2xl border border-slate-200/90 bg-white text-base text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors"
+            className="w-full min-h-[48px] pl-11 pr-11 py-2.5 rounded-2xl border border-neutral-800 bg-neutral-950 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               aria-label="Limpiar búsqueda"
-              className="min-h-[44px] min-w-[44px] absolute right-1 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="min-h-[44px] min-w-[44px] absolute right-1 flex items-center justify-center rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
+        {/* Selector de filtros por prioridad (Todas, Alta, Media, Baja) */}
+        <div
+          role="group"
+          aria-label="Filtrar actividades por prioridad"
+          className="grid grid-cols-4 gap-1.5 p-1 bg-neutral-900 border border-neutral-800 rounded-2xl"
+        >
+          {(
+            [
+              { id: 'todas', label: 'Todas', activeClass: 'bg-neutral-800 text-white' },
+              { id: 'alta', label: 'Alta', activeClass: 'bg-neutral-800 text-red-400' },
+              { id: 'media', label: 'Media', activeClass: 'bg-neutral-800 text-amber-400' },
+              { id: 'baja', label: 'Baja', activeClass: 'bg-neutral-800 text-emerald-400' },
+            ] as const
+          ).map((filterOption) => {
+            const isActive = priorityFilter === filterOption.id;
+            return (
+              <button
+                key={filterOption.id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setPriorityFilter(filterOption.id)}
+                className={`min-h-[44px] px-2 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] whitespace-nowrap ${
+                  isActive
+                    ? filterOption.activeClass
+                    : 'text-neutral-400 hover:text-neutral-100'
+                }`}
+              >
+                {filterOption.label}
+              </button>
+            );
+          })}
+        </div>
+
         {activities.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-10 px-4 text-center rounded-3xl border border-dashed border-slate-300 bg-white"
+            className="py-10 px-4 text-center rounded-3xl border border-dashed border-neutral-800 bg-neutral-950"
           >
-            <p className="text-base font-semibold text-slate-700">
+            <p className="text-base font-semibold text-neutral-200">
               Aún no tienes actividades.
             </p>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-neutral-400 mt-1">
               Escribe una arriba y presiona Agregar actividad.
             </p>
           </motion.div>
@@ -437,17 +476,24 @@ export function AgendaPreview() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-8 px-4 text-center rounded-3xl border border-dashed border-slate-300 bg-white space-y-3"
+            className="py-8 px-4 text-center rounded-3xl border border-dashed border-neutral-800 bg-neutral-950 space-y-3"
           >
-            <p className="text-base font-semibold text-slate-700">
-              No se encontraron actividades con "{searchQuery.trim()}".
+            <p className="text-base font-semibold text-neutral-200">
+              {trimmedQuery && priorityFilter !== 'todas'
+                ? `No hay actividades de prioridad ${priorityFilter} con "${searchQuery.trim()}".`
+                : priorityFilter !== 'todas'
+                ? `No hay actividades con prioridad ${priorityFilter}.`
+                : `No se encontraron actividades con "${searchQuery.trim()}".`}
             </p>
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
-              className="min-h-[44px] px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm font-semibold hover:bg-slate-50 transition-colors"
+              onClick={() => {
+                setSearchQuery('');
+                setPriorityFilter('todas');
+              }}
+              className="min-h-[44px] px-4 py-2 rounded-xl border border-neutral-700 bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-800 transition-colors"
             >
-              Limpiar búsqueda
+              Mostrar todas
             </button>
           </motion.div>
         ) : (
@@ -467,8 +513,8 @@ export function AgendaPreview() {
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     className={`rounded-2xl border px-2.5 py-2.5 flex items-center gap-1.5 transition-colors ${
                       item.completed
-                        ? 'bg-slate-50/90 border-slate-200/70'
-                        : 'bg-white border-slate-200/90 shadow-2xs'
+                        ? 'bg-neutral-950/60 border-neutral-800/70'
+                        : 'bg-neutral-950 border-neutral-800'
                     }`}
                   >
                     {/* Control para marcar como completada */}
@@ -482,13 +528,13 @@ export function AgendaPreview() {
                           : `Marcar "${item.name}" como completada`
                       }
                       onClick={() => handleToggleCompleted(item.id)}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-slate-100 active:scale-95 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-blue-600"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-neutral-900 active:scale-95 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-blue-500"
                     >
                       <span
                         className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
                           item.completed
                             ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'bg-white border-slate-400 text-transparent'
+                            : 'bg-neutral-900 border-neutral-500 text-transparent'
                         }`}
                       >
                         <Check className="w-4 h-4 stroke-[3]" />
@@ -504,19 +550,19 @@ export function AgendaPreview() {
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                         <span
                           className={`text-base font-semibold break-words transition-colors ${
-                            item.completed ? 'line-through text-slate-400' : 'text-slate-900'
+                            item.completed ? 'line-through text-neutral-500' : 'text-white'
                           }`}
                         >
                           {item.name}
                         </span>
-                        <span className="text-xs font-medium text-slate-500 tabular-nums whitespace-nowrap">
+                        <span className="text-xs font-medium text-neutral-400 tabular-nums whitespace-nowrap">
                           · {formatActivityDate(item.date, todayISO)}
                         </span>
                       </div>
 
                       <div
                         className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
-                          item.completed ? 'text-slate-400' : priorityMeta.textClass
+                          item.completed ? 'text-neutral-500' : priorityMeta.textClass
                         }`}
                       >
                         <Flag className="w-3.5 h-3.5 shrink-0" />
@@ -529,7 +575,7 @@ export function AgendaPreview() {
                       type="button"
                       onClick={() => openEditForm(item)}
                       aria-label={`Editar "${item.name}"`}
-                      className="min-h-[44px] min-w-[44px] rounded-xl text-blue-700 hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center shrink-0 focus-visible:outline-2 focus-visible:outline-blue-600"
+                      className="min-h-[44px] min-w-[44px] rounded-xl text-blue-400 hover:bg-blue-950/60 active:scale-95 transition-all flex items-center justify-center shrink-0 focus-visible:outline-2 focus-visible:outline-blue-500"
                     >
                       <Pencil className="w-[18px] h-[18px]" />
                     </button>
@@ -539,7 +585,7 @@ export function AgendaPreview() {
                       type="button"
                       onClick={() => handleDeleteActivity(item.id)}
                       aria-label={`Eliminar "${item.name}"`}
-                      className="min-h-[44px] min-w-[44px] rounded-xl text-red-700 hover:bg-red-50 active:scale-95 transition-all flex items-center justify-center shrink-0 focus-visible:outline-2 focus-visible:outline-red-600"
+                      className="min-h-[44px] min-w-[44px] rounded-xl text-red-400 hover:bg-red-950/60 active:scale-95 transition-all flex items-center justify-center shrink-0 focus-visible:outline-2 focus-visible:outline-red-500"
                     >
                       <Trash2 className="w-[18px] h-[18px]" />
                     </button>
@@ -559,7 +605,7 @@ export function AgendaPreview() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.16 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-xs"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 backdrop-blur-xs"
             role="dialog"
             aria-modal="true"
             aria-labelledby="editar-titulo"
@@ -572,22 +618,22 @@ export function AgendaPreview() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 40, opacity: 0 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-[430px] bg-white rounded-t-3xl border-t border-slate-200 shadow-xl overflow-hidden pb-safe"
+              className="w-full max-w-[430px] bg-neutral-950 rounded-t-3xl border-t border-neutral-800 shadow-2xl overflow-hidden pb-safe"
             >
               {/* Indicador táctil superior */}
               <div className="pt-3 pb-1 flex justify-center">
-                <div className="w-10 h-1.5 bg-slate-300 rounded-full" aria-hidden="true" />
+                <div className="w-10 h-1.5 bg-neutral-700 rounded-full" aria-hidden="true" />
               </div>
 
-              <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between gap-3">
-                <h2 id="editar-titulo" className="text-lg font-bold text-slate-900">
+              <div className="px-5 py-3 border-b border-neutral-800 flex items-center justify-between gap-3">
+                <h2 id="editar-titulo" className="text-lg font-bold text-white">
                   Editar actividad
                 </h2>
                 <button
                   type="button"
                   onClick={handleCancelEdit}
                   aria-label="Cerrar edición"
-                  className="min-h-[44px] min-w-[44px] -mr-2 flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                  className="min-h-[44px] min-w-[44px] -mr-2 flex items-center justify-center rounded-xl text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -597,7 +643,7 @@ export function AgendaPreview() {
                 <div>
                   <label
                     htmlFor="editar-nombre"
-                    className="block text-sm font-semibold text-slate-800 mb-1.5"
+                    className="block text-sm font-semibold text-neutral-200 mb-1.5"
                   >
                     Nombre de la actividad
                   </label>
@@ -614,14 +660,14 @@ export function AgendaPreview() {
                     }}
                     placeholder="Escribe el nuevo nombre"
                     aria-invalid={Boolean(editError)}
-                    className={`w-full min-h-[48px] px-4 py-3 rounded-xl border bg-slate-50/70 text-base text-slate-900 focus:bg-white focus:outline-none focus:ring-2 transition-colors ${
+                    className={`w-full min-h-[48px] px-4 py-3 rounded-xl border bg-neutral-900 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 transition-colors ${
                       editError
-                        ? 'border-red-600 focus:ring-red-600 focus:border-red-600'
-                        : 'border-slate-300 focus:ring-blue-600 focus:border-blue-600'
+                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                        : 'border-neutral-700 focus:ring-blue-500 focus:border-blue-500'
                     }`}
                   />
                   {editError && (
-                    <p className="mt-1.5 text-sm font-medium text-red-700" role="alert">
+                    <p className="mt-1.5 text-sm font-medium text-red-400" role="alert">
                       {editError}
                     </p>
                   )}
@@ -630,18 +676,18 @@ export function AgendaPreview() {
                 <div>
                   <label
                     htmlFor="editar-fecha"
-                    className="block text-sm font-semibold text-slate-800 mb-1.5"
+                    className="block text-sm font-semibold text-neutral-200 mb-1.5"
                   >
                     Fecha
                   </label>
                   <div className="relative flex items-center">
-                    <Calendar className="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none" />
+                    <Calendar className="w-5 h-5 text-neutral-400 absolute left-3.5 pointer-events-none" />
                     <input
                       id="editar-fecha"
                       type="date"
                       value={editDate}
                       onChange={(e) => setEditDate(e.target.value || getTodayISO())}
-                      className="w-full min-h-[48px] pl-11 pr-4 py-3 rounded-xl border border-slate-300 bg-slate-50/70 text-base text-slate-900 tabular-nums focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors"
+                      className="w-full min-h-[48px] pl-11 pr-4 py-3 rounded-xl border border-neutral-700 bg-neutral-900 text-base text-white tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -650,13 +696,13 @@ export function AgendaPreview() {
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className="min-h-[48px] px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 text-base font-semibold hover:bg-slate-50 active:scale-[0.98] transition-all"
+                    className="min-h-[48px] px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-900 text-neutral-200 text-base font-semibold hover:bg-neutral-800 active:scale-[0.98] transition-all"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="min-h-[48px] px-4 py-3 rounded-xl bg-blue-600 text-white text-base font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all"
+                    className="min-h-[48px] px-4 py-3 rounded-xl bg-blue-600 text-white text-base font-semibold hover:bg-blue-500 active:scale-[0.98] transition-all"
                   >
                     Guardar cambios
                   </button>
